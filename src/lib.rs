@@ -598,3 +598,29 @@ impl<'a> Extend<&'a Text> for TextMut {
         iter.into_iter().for_each(move |s| self.push_str(s));
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fmt::format;
+
+    use super::*;
+
+    #[test]
+    fn text_mut_create() {
+        let mut buf = TextMut::new();
+        buf.push_str("Hello, ");
+        buf.push_str("world!");
+        assert_eq!(buf, "Hello, world!");
+        buf.push(' ');
+        buf.extend(vec!["Woo, ", "unit tests!"]);
+        assert_eq!(buf, "Hello, world! Woo, unit tests!");
+        buf.extend(vec![String::from(" I'm in a String.")]);
+        buf.extend(vec![Text::from(" Ooo, text")]);
+        assert_eq!(
+            format!("{}", buf),
+            String::from("Hello, world! Woo, unit tests! I'm in a String. Ooo, text")
+        );
+        buf.clear();
+        assert_eq!(buf, "");
+    }
+}
