@@ -48,11 +48,11 @@ impl Text {
         Self(b)
     }
 
-    /// Copies the provided string into
-    pub fn copy_from(s: &str) -> Self {
+    /// Copies the provided string into a new buffer.
+    pub fn copy_from(s: impl AsRef<str>) -> Self {
         // copy the bytes and wrap it
         // guaranteed to be valid
-        Self(Bytes::copy_from_slice(s.as_bytes()))
+        Self(Bytes::copy_from_slice(s.as_ref().as_bytes()))
     }
 
     /// Creates `Text` from a static `str`
@@ -363,6 +363,15 @@ impl TextMut {
     /// bytes long before reallocating
     pub fn with_capacity(capacity: usize) -> Self {
         Self(BytesMut::with_capacity(capacity))
+    }
+
+    /// Copies the provided string into a new mutable buffer.
+    pub fn copy_from(s: impl AsRef<str>) -> Self {
+        /// There is no `BytesMut::copy_from_slice`
+        let s = s.as_ref();
+        let mut t = Self::with_capacity(s.len());
+        t.push_str(s);
+        t
     }
 
     /// Converts `Bytes` to `Text`.
