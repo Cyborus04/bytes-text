@@ -3,6 +3,8 @@
 //! # Example
 //!
 //! ```
+//! use bytes_text::Text;
+//!
 //! let text = Text::from("Hello, world!");
 //! println!("{}", text);
 //!
