@@ -1,6 +1,6 @@
 [![crates.io](https://img.shields.io/crates/v/bytes-text?style=flat-square)](https://crates.io/crates/bytes-text)
 [![docs](https://img.shields.io/docsrs/bytes-text?style=flat-square)](https://docs.rs/bytes-text)
-[![build status](https://img.shields.io/github/workflow/status/Cyborus04/bytes-text/rust?style=flat-square)](https://github.com/Cyborus04/bytes-text/actions/workflows/rust.yml)
+[![build status](https://img.shields.io/github/workflow/status/Cyborus04/bytes-text/Rust?style=flat-square)](https://github.com/Cyborus04/bytes-text/actions/workflows/rust.yml)
 
 # bytes-text
 
