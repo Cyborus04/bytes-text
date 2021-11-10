@@ -4,16 +4,16 @@
 
 # bytes-text
 
-`Text` is to [`Bytes`]() what `String` is to `Vec&lt;u8&gt;`
+`Text` is to [`Bytes`]() what `String` is to `Vec<u8>`
 
 ## Example
 
 ```rust
-let text = Text::from(&quot;Hello, world!&quot;);
-println!(&quot;{}&quot;, text);
+let text = Text::from("Hello, world!");
+println!("{}", text);
 
 let hello = text.get(..5);
-assert_eq!(hello, &quot;Hello&quot;);
+assert_eq!(hello, "Hello");
 
 ```
 
