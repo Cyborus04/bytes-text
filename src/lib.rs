@@ -192,6 +192,8 @@ impl Debug for Text {
 
 // ## Comparisons
 
+// ### Self comparisons
+
 impl PartialEq for Text {
     fn eq(&self, other: &Self) -> bool {
         (&**self).eq(&**other)
@@ -200,38 +202,46 @@ impl PartialEq for Text {
 
 impl Eq for Text {}
 
-impl PartialEq<str> for Text {
-    fn eq(&self, other: &str) -> bool {
-        (&**self).eq(other)
-    }
-}
-impl PartialEq<&str> for Text {
-    fn eq(&self, other: &&str) -> bool {
-        (&**self).eq(*other)
+impl PartialEq<&Text> for Text {
+    fn eq(&self, other: &&Text) -> bool {
+        (&**self).eq(&***other)
     }
 }
 
-impl PartialEq<String> for Text {
-    fn eq(&self, other: &String) -> bool {
-        (&**self).eq(other)
-    }
-}
-
-impl PartialEq<&String> for Text {
-    fn eq(&self, other: &&String) -> bool {
-        (&**self).eq(*other)
-    }
-}
-
-impl PartialEq<TextMut> for Text {
-    fn eq(&self, other: &TextMut) -> bool {
-        (&**self).eq(&**other)
+impl PartialEq<&mut Text> for Text {
+    fn eq(&self, other: &&mut Text) -> bool {
+        (&**self).eq(&***other)
     }
 }
 
 impl PartialOrd for Text {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+impl Ord for Text {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (&**self).cmp(&**other)
+    }
+}
+// ### str comparisons
+
+impl PartialEq<str> for Text {
+    fn eq(&self, other: &str) -> bool {
+        (&**self).eq(other)
+    }
+}
+
+impl PartialEq<&str> for Text {
+    fn eq(&self, other: &&str) -> bool {
+        (&**self).eq(*other)
+    }
+}
+
+impl PartialEq<&mut str> for Text {
+    fn eq(&self, other: &&mut str) -> bool {
+        (&**self).eq(*other)
     }
 }
 
@@ -247,17 +257,89 @@ impl PartialOrd<&str> for Text {
     }
 }
 
+impl PartialOrd<&mut str> for Text {
+    fn partial_cmp(&self, other: &&mut str) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(*other)
+    }
+}
+
+// ### String comparisons
+
+impl PartialEq<String> for Text {
+    fn eq(&self, other: &String) -> bool {
+        (&**self).eq(other)
+    }
+}
+
+impl PartialEq<&String> for Text {
+    fn eq(&self, other: &&String) -> bool {
+        (&**self).eq(*other)
+    }
+}
+
+impl PartialEq<&mut String> for Text {
+    fn eq(&self, other: &&mut String) -> bool {
+        (&**self).eq(*other)
+    }
+}
+
+impl PartialOrd<String> for Text {
+    fn partial_cmp(&self, other: &String) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&**other)
+    }
+}
+
+impl PartialOrd<&String> for Text {
+    fn partial_cmp(&self, other: &&String) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
+    }
+}
+
+impl PartialOrd<&mut String> for Text {
+    fn partial_cmp(&self, other: &&mut String) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
+    }
+}
+
+// ### TextMut Comparisons
+
+impl PartialEq<TextMut> for Text {
+    fn eq(&self, other: &TextMut) -> bool {
+        (&**self).eq(&**other)
+    }
+}
+
+impl PartialEq<&TextMut> for Text {
+    fn eq(&self, other: &&TextMut) -> bool {
+        (&**self).eq(&***other)
+    }
+}
+
+impl PartialEq<&mut TextMut> for Text {
+    fn eq(&self, other: &&mut TextMut) -> bool {
+        (&**self).eq(&***other)
+    }
+}
+
 impl PartialOrd<TextMut> for Text {
     fn partial_cmp(&self, other: &TextMut) -> Option<std::cmp::Ordering> {
         (&**self).partial_cmp(&**other)
     }
 }
 
-impl Ord for Text {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        (&**self).cmp(&**other)
+impl PartialOrd<&TextMut> for Text {
+    fn partial_cmp(&self, other: &&TextMut) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
     }
 }
+
+impl PartialOrd<&mut TextMut> for Text {
+    fn partial_cmp(&self, other: &&mut TextMut) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
+    }
+}
+
+// ## Hash
 
 impl Hash for Text {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -265,7 +347,7 @@ impl Hash for Text {
     }
 }
 
-// # Immutable
+// # Mutable
 
 /// Mutable UTF-8 text buffer
 #[derive(Default)]
@@ -398,6 +480,8 @@ impl TextMut {
     }
 
     fn as_str(&self) -> &str {
+        // Safety:
+        // `self` will always contain valid UTF-8
         unsafe { std::str::from_utf8_unchecked(self.0.as_ref()) }
     }
 
@@ -413,6 +497,7 @@ impl AsRef<str> for TextMut {
         self.as_str()
     }
 }
+
 impl AsMut<str> for TextMut {
     fn as_mut(&mut self) -> &mut str {
         self.as_str_mut()
@@ -469,6 +554,8 @@ impl Debug for TextMut {
 
 // ## Comparisons
 
+// ### Self comparisons
+
 impl PartialEq for TextMut {
     fn eq(&self, other: &Self) -> bool {
         (&**self).eq(&**other)
@@ -477,38 +564,41 @@ impl PartialEq for TextMut {
 
 impl Eq for TextMut {}
 
-impl PartialEq<str> for TextMut {
-    fn eq(&self, other: &str) -> bool {
-        (&**self).eq(other)
-    }
-}
-impl PartialEq<&str> for TextMut {
-    fn eq(&self, other: &&str) -> bool {
-        (&**self).eq(*other)
+impl PartialEq<&TextMut> for TextMut {
+    fn eq(&self, other: &&TextMut) -> bool {
+        (&**self).eq(&***other)
     }
 }
 
-impl PartialEq<String> for TextMut {
-    fn eq(&self, other: &String) -> bool {
-        (&**self).eq(other)
-    }
-}
-
-impl PartialEq<&String> for TextMut {
-    fn eq(&self, other: &&String) -> bool {
-        (&**self).eq(*other)
-    }
-}
-
-impl PartialEq<Text> for TextMut {
-    fn eq(&self, other: &Text) -> bool {
-        (&**self).eq(&**other)
+impl PartialEq<&mut TextMut> for TextMut {
+    fn eq(&self, other: &&mut TextMut) -> bool {
+        (&**self).eq(&***other)
     }
 }
 
 impl PartialOrd for TextMut {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+// ### str comparisons
+
+impl PartialEq<str> for TextMut {
+    fn eq(&self, other: &str) -> bool {
+        (&**self).eq(other)
+    }
+}
+
+impl PartialEq<&str> for TextMut {
+    fn eq(&self, other: &&str) -> bool {
+        (&**self).eq(*other)
+    }
+}
+
+impl PartialEq<&mut str> for TextMut {
+    fn eq(&self, other: &&mut str) -> bool {
+        (&**self).eq(*other)
     }
 }
 
@@ -524,23 +614,97 @@ impl PartialOrd<&str> for TextMut {
     }
 }
 
+impl PartialOrd<&mut str> for TextMut {
+    fn partial_cmp(&self, other: &&mut str) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(*other)
+    }
+}
+
+// ### String comparisons
+
+impl PartialEq<String> for TextMut {
+    fn eq(&self, other: &String) -> bool {
+        (&**self).eq(other)
+    }
+}
+
+impl PartialEq<&String> for TextMut {
+    fn eq(&self, other: &&String) -> bool {
+        (&**self).eq(*other)
+    }
+}
+
+impl PartialEq<&mut String> for TextMut {
+    fn eq(&self, other: &&mut String) -> bool {
+        (&**self).eq(*other)
+    }
+}
+
+impl PartialOrd<String> for TextMut {
+    fn partial_cmp(&self, other: &String) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&**other)
+    }
+}
+
+impl PartialOrd<&String> for TextMut {
+    fn partial_cmp(&self, other: &&String) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
+    }
+}
+
+impl PartialOrd<&mut String> for TextMut {
+    fn partial_cmp(&self, other: &&mut String) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
+    }
+}
+
+// ### Text comparisons
+
+impl PartialEq<Text> for TextMut {
+    fn eq(&self, other: &Text) -> bool {
+        (&**self).eq(&**other)
+    }
+}
+
+impl PartialEq<&Text> for TextMut {
+    fn eq(&self, other: &&Text) -> bool {
+        (&**self).eq(&***other)
+    }
+}
+
+impl PartialEq<&mut Text> for TextMut {
+    fn eq(&self, other: &&mut Text) -> bool {
+        (&**self).eq(&***other)
+    }
+}
+
 impl PartialOrd<Text> for TextMut {
     fn partial_cmp(&self, other: &Text) -> Option<std::cmp::Ordering> {
         (&**self).partial_cmp(&**other)
     }
 }
 
-impl Ord for TextMut {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        (&**self).cmp(&**other)
+impl PartialOrd<&Text> for TextMut {
+    fn partial_cmp(&self, other: &&Text) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
     }
 }
+
+impl PartialOrd<&mut Text> for TextMut {
+    fn partial_cmp(&self, other: &&mut Text) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(&***other)
+    }
+}
+
+/// ## Hash
 
 impl Hash for TextMut {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         (&**self).hash(state);
     }
 }
+
+/// ## Extend
 
 impl Extend<char> for TextMut {
     fn extend<T>(&mut self, iter: T)
@@ -601,8 +765,6 @@ impl<'a> Extend<&'a Text> for TextMut {
 
 #[cfg(test)]
 mod tests {
-    use std::fmt::format;
-
     use super::*;
 
     #[test]
