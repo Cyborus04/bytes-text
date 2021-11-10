@@ -203,10 +203,21 @@ impl PartialEq<str> for Text {
         (&**self).eq(other)
     }
 }
+impl PartialEq<&str> for Text {
+    fn eq(&self, other: &&str) -> bool {
+        (&**self).eq(*other)
+    }
+}
 
 impl PartialEq<String> for Text {
     fn eq(&self, other: &String) -> bool {
         (&**self).eq(other)
+    }
+}
+
+impl PartialEq<&String> for Text {
+    fn eq(&self, other: &&String) -> bool {
+        (&**self).eq(*other)
     }
 }
 
@@ -219,6 +230,12 @@ impl PartialOrd for Text {
 impl PartialOrd<str> for Text {
     fn partial_cmp(&self, other: &str) -> Option<std::cmp::Ordering> {
         (&**self).partial_cmp(other)
+    }
+}
+
+impl PartialOrd<&str> for Text {
+    fn partial_cmp(&self, other: &&str) -> Option<std::cmp::Ordering> {
+        (&**self).partial_cmp(*other)
     }
 }
 
