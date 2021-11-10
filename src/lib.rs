@@ -1,4 +1,4 @@
-//! `Text` is to `Bytes` what `String` is to `Vec<u8>`
+//! `Text` is to [`Bytes`](https://docs.rs/bytes/1/bytes/struct.Bytes.html) what `String` is to `Vec<u8>`
 //!
 //! # Example
 //!
