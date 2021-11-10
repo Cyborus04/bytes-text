@@ -27,7 +27,7 @@ use std::{
 use bytes::Bytes;
 
 /// Immutable, reference counted, UTF-8 text
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Text(Bytes);
 
 impl Text {
