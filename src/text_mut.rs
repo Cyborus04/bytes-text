@@ -11,22 +11,73 @@ use bytes::BytesMut;
 use crate::Text;
 
 /// Mutable UTF-8 text buffer
+///
+/// # Examples
+///
+/// ```
+/// use bytes_text::TextMut;
+///
+/// let mut text = TextMut::with_capacity(64);
+///
+/// text.push('h'); // `push` adds a character to the end of the text
+/// text.push('e');
+/// text.push_str("llo");
+///
+/// assert_eq!(text, "hello");
+///
+/// // Freeze the buffer so that it can be shared
+/// let a = text.freeze();
+///
+/// // This does not allocate, instead `b` points to the same memory.
+/// let b = a.clone();
+///
+/// assert_eq!(a, "hello");
+/// assert_eq!(b, "hello");
+/// ```
+// example taken from `bytes`
 #[derive(Default)]
 pub struct TextMut(BytesMut);
 
 impl TextMut {
     /// Creates a new, empty, text buffer.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::new();
+    /// text.push_str("Hello!");
+    /// println!("Hello!");
+    /// ```
     pub fn new() -> Self {
         Self(BytesMut::new())
     }
 
     /// Creates a new, empty, text buffer that can grow to at least `capacity`
     /// bytes long before reallocating
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::with_capacity(6);
+    /// text.push_str("Hello!"); // Doesn't allocate
+    /// println!("Hello!");
+    /// ```
     pub fn with_capacity(capacity: usize) -> Self {
         Self(BytesMut::with_capacity(capacity))
     }
 
     /// Copies the provided string into a new mutable buffer.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::copy_from("Hello,");
+    /// text.push_str(" world!");
+    /// println!("Hello, world!");
+    /// ```
     pub fn copy_from(s: impl AsRef<str>) -> Self {
         // There is no `BytesMut::copy_from_slice`
         let s = s.as_ref();
@@ -36,6 +87,19 @@ impl TextMut {
     }
 
     /// Converts `Bytes` to `Text`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// # use bytes::{BytesMut, BufMut};
+    /// let mut buf = BytesMut::new();
+    /// buf.put(&b"Hello,"[..]);
+    ///
+    /// let mut text = TextMut::from_utf8(buf).expect("Invalid UTF-8!");
+    /// text.push_str(" world!");
+    /// assert_eq!(text, "Hello, world!");
+    /// ```
     pub fn from_utf8(b: BytesMut) -> Result<Self, Utf8Error> {
         // run utf-8 validation
         let _ = std::str::from_utf8(b.as_ref())?;
@@ -43,58 +107,185 @@ impl TextMut {
     }
 
     /// Converts `Bytes` to `Text` without verifying that it's valid UTF-8
+    ///
     /// # Safety
+    ///
     /// Must be valid UTF-8
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// # use bytes::{BytesMut, BufMut};
+    /// let mut buf = BytesMut::new();
+    /// buf.put(&b"Hello,"[..]);
+    ///
+    /// // We can see above that it is valid
+    /// let mut text = unsafe { TextMut::from_utf8_unchecked(buf) };
+    /// text.push_str(" world!");
+    /// assert_eq!(text, "Hello, world!");
+    /// ```
     #[inline]
     pub const unsafe fn from_utf8_unchecked(b: BytesMut) -> Self {
         Self(b)
     }
 
     /// The number of bytes in this text
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let text = TextMut::copy_from("Hello!");
+    /// assert_eq!(text.len(), 6);
+    /// ```
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
     /// The maximum length of this buffer before reallocation is required
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::with_capacity(32);
+    /// text.push_str("rustlang");
+    /// assert_eq!(text.len(), 8);
+    /// assert_eq!(text.capacity(), 32);
+    /// ```
     pub fn capacity(&self) -> usize {
         self.0.capacity()
     }
 
     /// Checks if this text is empty
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let text = TextMut::new();
+    /// assert!(text.is_empty());
+    ///
+    /// // Even if there's available capacity
+    /// let text2 = TextMut::with_capacity(24);
+    /// assert!(text.is_empty());
+    /// ```
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
     /// Freezes this into an immutable, shareable, text buffer.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    ///
+    /// let mut text = TextMut::with_capacity(64);
+    /// text.push_str("hello");
+    ///
+    /// // Freeze the buffer so that it can be shared
+    /// let a = text.freeze();
+    ///
+    /// // This does not allocate, instead `b` points to the same memory.
+    /// let b = a.clone();
+    ///
+    /// assert_eq!(a, "hello");
+    /// assert_eq!(b, "hello");
+    /// ```
     pub fn freeze(self) -> Text {
         // Safety: self.0 is guaranteed to be valid UTF-8
         unsafe { Text::from_utf8_unchecked(self.0.freeze()) }
     }
 
     /// Reserves space for at least `additional` more bytes to be inserted
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::new();
+    /// text.reserve(24);
+    /// assert_eq!(text.capacity(), 24);
+    /// ```
     pub fn reserve(&mut self, additional: usize) {
         self.0.reserve(additional)
     }
 
     /// Clears the buffer of its contents
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::copy_from("I'm gonna get cleared! 😭");
+    /// text.clear();
+    /// assert_eq!(text.len(), 0);
+    /// assert_eq!(text, TextMut::new());
+    /// // Capacity is conserved
+    /// assert!(text.capacity() > 0);
+    /// ```
     pub fn clear(&mut self) {
         self.0.clear()
     }
 
     /// Get a reference to the inner bytes
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// # use bytes::BytesMut;
+    /// let text = TextMut::copy_from("Woah");
+    /// let bytes: &BytesMut = text.as_bytes();
+    /// ```
     pub fn as_bytes(&self) -> &BytesMut {
         &self.0
     }
 
     /// Get a mutable reference to the inner bytes
+    ///
     /// # Safety
+    ///
     /// The returned reference must not be modified in such a way that makes it
     /// invalid UTF-8, even momentarily
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// # use bytes::{BytesMut, BufMut};
+    /// let mut text = TextMut::copy_from("Hello");
+    /// // Must not modify it in a way that makes it invalid UTF-8
+    ///
+    /// let bytes: &mut BytesMut = unsafe { text.as_bytes_mut() };
+    /// bytes.put_u8(b'!');
+    /// drop(bytes); // not necessarily needed
+    ///
+    /// assert_eq!(text, "Hello!");
+    /// ```
     pub unsafe fn as_bytes_mut(&mut self) -> &mut BytesMut {
         &mut self.0
     }
 
     /// Convert into a mutable buffer of raw bytes
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// # use bytes::{BytesMut, BufMut};
+    /// let text = TextMut::copy_from("Hello");
+    ///
+    /// // Must not modify it in a way that makes it invalid UTF-8
+    /// let mut bytes: BytesMut = text.into_bytes_mut();
+    /// bytes.put_u8(b'!');
+    ///
+    /// /// Everything we did was ok :)
+    /// let text = unsafe { TextMut::from_utf8_unchecked(bytes) };
+    /// assert_eq!(text, "Hello!");
+    /// ```
     pub fn into_bytes_mut(self) -> BytesMut {
         self.0
     }
@@ -102,6 +293,16 @@ impl TextMut {
     /// Splits the text into two halves
     ///
     /// Returns `Err(self)` if the index is not a valid char boundary
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::copy_from("Woo, split!");
+    /// let (a, b) = text.split_at(4).unwrap();
+    /// assert_eq!(a, "Woo,");
+    /// assert_eq!(b, " split!");
+    /// ```
     pub fn split_at(mut self, index: usize) -> Result<(Self, Self), Self> {
         soft_assert::soft_assert!(self.is_char_boundary(index), Err(self));
         let right = self.0.split_off(index);
@@ -113,6 +314,16 @@ impl TextMut {
     ///
     /// Returns `None` if the index is not a valid char boundary. If this
     /// returns `None`, `self` remains unchanged.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::copy_from("Woo, split!");
+    /// let end = text.split_off(4).unwrap();
+    /// assert_eq!(text, "Woo,");
+    /// assert_eq!(end, " split!");
+    /// ```
     pub fn split_off(&mut self, index: usize) -> Option<Self> {
         soft_assert::soft_assert!(self.is_char_boundary(index));
         let right = self.0.split_off(index);
@@ -124,18 +335,58 @@ impl TextMut {
     ///
     /// Returns `None` if the index is not a valid char boundary. If this
     /// returns `None`, `self` remains unchanged.
-    pub fn split_from(&mut self, index: usize) -> Option<Self> {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::copy_from("Woo, split!");
+    /// let start = text.split_to(4).unwrap();
+    /// assert_eq!(start, "Woo,");
+    /// assert_eq!(text, " split!");
+    /// ```
+    pub fn split_to(&mut self, index: usize) -> Option<Self> {
         soft_assert::soft_assert!(self.is_char_boundary(index));
-        let right = self.0.split_off(index);
+        let right = self.0.split_to(index);
         Some(Self(right))
     }
 
     /// Copies the string reference into this buffer
+    ///
+    /// If you're pushing another `TextMut`, it's better to use [`TextMut::join`](TextMut::join)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::new();
+    /// text.push_str("Hello, ");
+    /// text.push_str("world! ");
+    ///
+    /// // Works with `String` too
+    /// let string = String::from("i'm in a string");
+    /// text.push_str(string);
+    ///
+    /// assert_eq!(text, "Hello, world! i'm in a string");
+    /// ```
     pub fn push_str(&mut self, s: impl AsRef<str>) {
         self.0.extend_from_slice(s.as_ref().as_bytes())
     }
 
     /// Adds a character to the end of this buffer
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::new();
+    /// text.push('H');
+    /// text.push('e');
+    /// text.push('l');
+    /// text.push('l');
+    /// text.push('o');
+    /// assert_eq!(text, "Hello");
+    /// ```
     pub fn push(&mut self, c: char) {
         let mut buf = [0; 4];
         let s = c.encode_utf8(&mut buf);
@@ -146,8 +397,34 @@ impl TextMut {
     ///
     /// If they were once contiguous (i.e. from one of the `split` methods) then
     /// this takes O(1) time
-    pub fn join(&mut self, other: TextMut) {
-        self.0.unsplit(other.0)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut a = TextMut::copy_from("Oh ");
+    /// let b = TextMut::copy_from("heck");
+    ///
+    /// // Allocates more space on `a` to make room for `b`
+    /// let joined = a.join(b);
+    /// assert_eq!(joined, "Oh heck");
+    /// ```
+    ///
+    /// ```
+    /// # use bytes_text::TextMut;
+    /// let mut text = TextMut::copy_from("woohoo");
+    ///
+    /// let (mut a, b) = text.split_at(3).unwrap();
+    /// assert_eq!(a, "woo");
+    /// assert_eq!(b, "hoo");
+    ///
+    /// // Doesn't allocates more space, since they come from the same buffer
+    /// let joined = a.join(b);
+    /// assert_eq!(joined, "woohoo");
+    /// ```
+    pub fn join(mut self, other: TextMut) -> TextMut {
+        self.0.unsplit(other.0);
+        self
     }
 
     fn as_str(&self) -> &str {
