@@ -12,7 +12,7 @@
 let text = Text::from("Hello, world!");
 println!("{}", text);
 
-let hello = text.get(..5);
+let hello = text.get(..5).unwrap();
 assert_eq!(hello, "Hello");
 
 ```
