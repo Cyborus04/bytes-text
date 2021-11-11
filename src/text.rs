@@ -1,4 +1,5 @@
 use std::{
+    borrow::Borrow,
     convert::TryFrom,
     fmt::{Debug, Display},
     hash::Hash,
@@ -155,7 +156,7 @@ impl Text {
     /// let bytes: &Bytes = text.as_bytes();
     /// assert_eq!(bytes, &b"Woah"[..])
     /// ```
-    pub fn as_bytes(&self) -> &Bytes {
+    pub const fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
@@ -274,6 +275,12 @@ impl Text {
 
 impl AsRef<str> for Text {
     fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Borrow<str> for Text {
+    fn borrow(&self) -> &str {
         self.as_str()
     }
 }

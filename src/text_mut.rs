@@ -1,4 +1,5 @@
 use std::{
+    borrow::{Borrow, BorrowMut},
     convert::TryFrom,
     fmt::{Debug, Display},
     hash::Hash,
@@ -47,7 +48,7 @@ impl TextMut {
     /// # use bytes_text::TextMut;
     /// let mut text = TextMut::new();
     /// text.push_str("Hello!");
-    /// println!("Hello!");
+    /// println!("{}", text);
     /// ```
     pub fn new() -> Self {
         Self(BytesMut::new())
@@ -62,7 +63,7 @@ impl TextMut {
     /// # use bytes_text::TextMut;
     /// let mut text = TextMut::with_capacity(6);
     /// text.push_str("Hello!"); // Doesn't allocate
-    /// println!("Hello!");
+    /// println!("{}", text);
     /// ```
     pub fn with_capacity(capacity: usize) -> Self {
         Self(BytesMut::with_capacity(capacity))
@@ -76,7 +77,7 @@ impl TextMut {
     /// # use bytes_text::TextMut;
     /// let mut text = TextMut::copy_from("Hello,");
     /// text.push_str(" world!");
-    /// println!("Hello, world!");
+    /// println!("{}", text );
     /// ```
     pub fn copy_from(s: impl AsRef<str>) -> Self {
         // There is no `BytesMut::copy_from_slice`
@@ -240,7 +241,7 @@ impl TextMut {
     /// let text = TextMut::copy_from("Woah");
     /// let bytes: &BytesMut = text.as_bytes();
     /// ```
-    pub fn as_bytes(&self) -> &BytesMut {
+    pub const fn as_bytes(&self) -> &BytesMut {
         &self.0
     }
 
@@ -448,6 +449,18 @@ impl AsRef<str> for TextMut {
 
 impl AsMut<str> for TextMut {
     fn as_mut(&mut self) -> &mut str {
+        self.as_str_mut()
+    }
+}
+
+impl Borrow<str> for TextMut {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl BorrowMut<str> for TextMut {
+    fn borrow_mut(&mut self) -> &mut str {
         self.as_str_mut()
     }
 }

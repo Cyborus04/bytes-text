@@ -14,7 +14,7 @@
 //! ```
 
 #![warn(missing_docs)]
-#![warn(rustdoc::missing_doc_code_examples)]
+#![warn(rustdoc::missing_doc_code_examples)] // this doesn't seem to do anything
 
 mod text;
 mod text_mut;
