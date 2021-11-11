@@ -1,8 +1,8 @@
+# bytes-text
+
 [![crates.io](https://img.shields.io/crates/v/bytes-text?style=flat-square)](https://crates.io/crates/bytes-text)
 [![docs](https://img.shields.io/docsrs/bytes-text?style=flat-square)](https://docs.rs/bytes-text)
 [![build status](https://img.shields.io/github/workflow/status/Cyborus04/bytes-text/Rust?style=flat-square)](https://github.com/Cyborus04/bytes-text/actions/workflows/rust.yml)
-
-# bytes-text
 
 `Text` is to [`Bytes`](https://docs.rs/bytes/1/bytes/struct.Bytes.html) what `String` is to `Vec<u8>`
 
