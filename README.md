@@ -17,6 +17,8 @@ assert_eq!(hello, "Hello");
 
 ```
 
+(this crate is not offically related to [`bytes`](https://github.com/tokio-rs/bytes))
+
 ## License
 
 This project is licensed under either of
